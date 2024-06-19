@@ -27,3 +27,40 @@ Use the crop function to clip the points to the area within the polygon.
 clipped_points <- crop(points, polygon)
 ```
 
+Create an empty raster and rasterize the points:
+Define a raster based on the extent of the polygon or a specified area and rasterize the points.
+```{r}
+# Define the extent from the polygon or manually
+raster_extent <- ext(polygon)  # Using the polygon's extent
+
+# Create an empty raster
+r <- rast(raster_extent, nrow=10, ncol=10, vals=0)
+
+# Rasterize points, counting the number in each cell
+count_raster <- rasterize(clipped_points, r, fun=sum)
+```
+
+Calculate the percentage of total points per cell:
+Calculate the total number of points and then convert the counts to percentages.
+```{r}
+# Calculate total number of clipped points
+total_points <- nrow(clipped_points)
+
+# Compute the percentage raster
+percentage_raster <- count_raster
+values(percentage_raster) <- (values(count_raster) / total_points) * 100
+```
+
+Visualization:
+Plot the resulting raster with the polygon overlay to visualize the distribution of point percentages.
+```{r}
+# Plot the percentage raster
+plot(percentage_raster, main="Percentage of Total Points per Cell", col=rainbow(100, alpha=0.5))
+lines(polygon, col="black", lwd=2)  # Add polygon outline for clarity
+```
+
+Notes:
+Handling NA values: If there are cells in the raster with no points, ensure these are handled properly (e.g., set to 0 or kept as NA depending on your analysis needs).
+Spatial extent and resolution: Adjust these parameters based on the spatial scale and detail you need for your analysis.
+Visualization enhancements: Adjust the color palette and other visualization parameters to best represent your data.
+Using terra for these tasks is efficient for handling large spatial data, and the workflow integrates spatial operations like clipping and rasterization seamlessly.
